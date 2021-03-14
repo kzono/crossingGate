@@ -22,9 +22,10 @@ enum EventFromSignal{
     opend_enter,   // 入口側遮断機開
     opend_exit     // 出口側遮断機開
 }
-enum TrainBound{
-    inbound, // 上り
-    outbound // 下り
+
+enum EventToTrain{
+    runInbound,
+    runOutbound
 }
 
 enum BarState{
@@ -356,17 +357,28 @@ class Signal{
         // 消灯画像を表示する
     }
 }
+enum TrainBound{
+    inbound,
+    outbound
+}
 
+enum TrainPos{
+    inArea, 
+    outOfArea 
+}
 class Train{
     readonly length : number = 40;
     readonly defaultInboundXPos : number =  - this.length; 
     readonly defaultOutboundXPos : number = canvas.width * 0.9; 
     defaultXPos : number = 0;
+    bound : TrainBound;
+    pos :TrainPos = TrainPos.outOfArea;
     x : number = 0;
     y : number = 0;
     speed : number = 0;
     image : HTMLImageElement
     constructor(bound : TrainBound){
+        this.bound = bound;
         this.image = new Image();
         switch(bound){
             case TrainBound.inbound:
@@ -387,19 +399,35 @@ class Train{
                 ;
         }
     }
-    run(){
-        if(train_inbound){
-            this.x += this.speed;
+    public handleEvent(evt : EventToTrain){
+        switch(evt){
+            case EventToTrain.runInbound:
+                this.pos = TrainPos.inArea;
+                break;
+            case EventToTrain.runOutbound:
+                this.pos = TrainPos.inArea;
+                break;
+            default:
+                ;
+        }
+        console.log('handleEvent: this.pos = inArea.');
+    }
+    public run(){
+        this.x += this.speed;
+        if(this.bound == TrainBound.outbound){
             if(this.x + this.length < 0) {
-                train_inbound = false;
+                this.pos = TrainPos.outOfArea;
                 this.x = this.defaultXPos;
+                console.log('run(): inbound this.pos = outOfArea.');
+                console.log('run(): x = %d', this.x);
             } 
         }
-        if(train_outbound){
-            this.x += this.speed;
+        if(this.bound == TrainBound.inbound){
             if(this.x + this.length > canvas.width) {
-                train_outbound = false;
+                this.pos = TrainPos.outOfArea;
                 this.x = this.defaultXPos;
+                console.log('run(): outbound this.pos = outOfArea.');
+                console.log('run(): x = %d', this.x);
             } 
         }
     }
@@ -408,8 +436,10 @@ class Train{
         this.y = -(y * 0.2167);
     }
     draw(){
-        ctx.drawImage(this.image, this.x, this.y);
-        this.run();
+        if( this.pos == TrainPos.inArea ){
+            ctx.drawImage(this.image, this.x, this.y);
+            this.run();
+        }
     }
 }
 
@@ -466,11 +496,11 @@ setInterval(drawAll, 90);
 
 function trainInbound(){ // 上り電車入場
     console.log("上り電車が来た！");
-    train_inbound = true;
+    inboundTrain.handleEvent(EventToTrain.runInbound);
 }
 function trainOutbound(){ // 下り電車入場
     console.log("下り電車が来た！");
-    train_outbound = true;
+    outboundTrain.handleEvent(EventToTrain.runOutbound);
 }
 
 function barUp(){
