@@ -388,15 +388,20 @@ class Train{
         }
     }
     run(){
-        this.x += this.speed;
-        if(this.x + this.length < 0) {
-            train_inbound = false;
-            this.x = this.defaultXPos;
-        } 
-        if(this.x + this.length > canvas.width) {
-            train_outbound = false;
-            this.x = this.defaultXPos;
-        } 
+        if(train_inbound){
+            this.x += this.speed;
+            if(this.x + this.length < 0) {
+                train_inbound = false;
+                this.x = this.defaultXPos;
+            } 
+        }
+        if(train_outbound){
+            this.x += this.speed;
+            if(this.x + this.length > canvas.width) {
+                train_outbound = false;
+                this.x = this.defaultXPos;
+            } 
+        }
     }
     setPos(x:number, y:number){
         this.x = x;
