@@ -95,15 +95,15 @@ class Signal {
         }
         this.leftBarImages = new Array();
         this.rightBarImages = new Array();
-        this.on_off = new Image();
-        this.off_on = new Image();
-        this.off_off = new Image();
+        this.onOff = new Image();
+        this.offOn = new Image();
+        this.offOff = new Image();
         this.initImages();
     }
     initImages() {
-        this.on_off.src = "../../images/Signal_on_off.svg";
-        this.off_on.src = "../../images/Signal_off_on.svg";
-        this.off_off.src = "../../images/Signal_off_off.svg";
+        this.onOff.src = "../../images/Signal_on_off.svg";
+        this.offOn.src = "../../images/Signal_off_on.svg";
+        this.offOff.src = "../../images/Signal_off_off.svg";
         const leftBarImage_paths = [
             "../../images/Bar00L.svg",
             "../../images/Bar05L.svg",
@@ -321,16 +321,15 @@ class Signal {
         }
     }
     noblink() {
-        ctx.drawImage(this.off_off, this.x, this.y, this.width, this.height);
+        ctx.drawImage(this.offOff, this.x, this.y, this.width, this.height);
     }
     blink() {
-        // 点灯画像と消灯画像を交互に表示する。表示位置は遮断機の位置によって異なる。（４通り）
         // 点滅間隔は this.blinkTime で設定し、this.blinkCount で制御する。
         if (this.blinkFlag) {
-            ctx.drawImage(this.on_off, this.x, this.y, this.width, this.height);
+            ctx.drawImage(this.onOff, this.x, this.y, this.width, this.height);
         }
         else {
-            ctx.drawImage(this.off_on, this.x, this.y, this.width, this.height);
+            ctx.drawImage(this.offOn, this.x, this.y, this.width, this.height);
         }
         this.blinkCount++;
         if (this.blinkCount > this.blinkTime) {
@@ -349,24 +348,24 @@ class Signal {
 class Train {
     constructor(bound) {
         this.length = 40;
-        this.default_inbound_x_pos = -this.length;
-        this.default_outbound_x_pos = canvas.width * 0.9;
-        this.default_x_pos = 0;
+        this.defaultInboundXPos = -this.length;
+        this.defaultOutboundXPos = canvas.width * 0.9;
+        this.defaultXPos = 0;
         this.x = 0;
         this.y = 0;
         this.speed = 0;
         this.image = new Image();
         switch (bound) {
             case TrainBound.inbound:
-                this.default_x_pos = this.default_inbound_x_pos;
-                this.x = this.default_x_pos;
+                this.defaultXPos = this.defaultInboundXPos;
+                this.x = this.defaultXPos;
                 this.y = canvas.height * (-0.2);
                 this.image.src = "../../images/train_R.svg";
                 this.speed = 5;
                 break;
             case TrainBound.outbound:
-                this.default_x_pos = this.default_outbound_x_pos;
-                this.x = this.default_x_pos;
+                this.defaultXPos = this.defaultOutboundXPos;
+                this.x = this.defaultXPos;
                 this.y = canvas.height * (-0.5);
                 this.image.src = "../../images/train_L.svg";
                 this.speed = -5;
@@ -379,11 +378,11 @@ class Train {
         this.x += this.speed;
         if (this.x + this.length < 0) {
             train_inbound = false;
-            this.x = this.default_x_pos;
+            this.x = this.defaultXPos;
         }
         if (this.x + this.length > canvas.width) {
             train_outbound = false;
-            this.x = this.default_x_pos;
+            this.x = this.defaultXPos;
         }
     }
     setPos(x, y) {
