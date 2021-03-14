@@ -55,15 +55,13 @@ class Signal {
     constructor(pos) {
         this.lampState = LampState.noblink;
         this.barState = BarState.opened;
-        this.blink_time = 5; // 警告ランプの点滅間隔
-        this.blink_count = 0; // 警告ランプ点滅間隔のカウンター
-        this.blink_flag = false; // 点滅パターン用フラグ
-        this.warning_time = 10000; // 警報が始まってから遮断バーをおろし始めるまでの時間
-        this.warning_count = 0; // warning_time のカウンター
-        this.count_per_image_closing = 3; // 遮断バーを下ろすとき、画像１枚あたりの表示回数
-        this.closing_count = 0; // count_per_image_closing になるまでの表示回数のカウンター
-        this.count_per_image_opening = 1; // 遮断バーを上げるとき、画像１枚あたりの表示回数
-        this.opening_count = 0; // count_per_image_opening になるまでの表示回数のカウンター 
+        this.blinkTime = 5; // 警告ランプの点滅間隔
+        this.blinkCount = 0; // 警告ランプ点滅間隔のカウンター
+        this.blinkFlag = false; // 点滅パターン用フラグ
+        this.countPerImageClosing = 3; // 遮断バーを下ろすとき、画像１枚あたりの表示回数
+        this.closingCount = 0; // countPerImageClosing になるまでの表示回数のカウンター
+        this.countPerImageOpening = 1; // 遮断バーを上げるとき、画像１枚あたりの表示回数
+        this.openingCount = 0; // countPerImageOpening になるまでの表示回数のカウンター 
         this.image_count = 0;
         this.width = 300; // 信号機画像の幅
         this.height = 200; // 信号機画像の幅
@@ -95,8 +93,8 @@ class Signal {
                 this.y = 0;
                 ;
         }
-        this.left_bar_images = new Array();
-        this.right_bar_images = new Array();
+        this.leftBarImages = new Array();
+        this.rightBarImages = new Array();
         this.on_off = new Image();
         this.off_on = new Image();
         this.off_off = new Image();
@@ -106,7 +104,7 @@ class Signal {
         this.on_off.src = "../../images/Signal_on_off.svg";
         this.off_on.src = "../../images/Signal_off_on.svg";
         this.off_off.src = "../../images/Signal_off_off.svg";
-        const left_bar_image_paths = [
+        const leftBarImage_paths = [
             "../../images/Bar00L.svg",
             "../../images/Bar05L.svg",
             "../../images/Bar10L.svg",
@@ -127,12 +125,12 @@ class Signal {
             "../../images/Bar85L.svg",
             "../../images/Bar90L.svg",
         ];
-        left_bar_image_paths.map(e => {
+        leftBarImage_paths.map(e => {
             var img = new Image();
             img.src = e;
-            this.left_bar_images.push(img);
+            this.leftBarImages.push(img);
         });
-        const right_bar_image_paths = [
+        const rightBarImage_paths = [
             "../../images/Bar00R.svg",
             "../../images/Bar05R.svg",
             "../../images/Bar10R.svg",
@@ -153,10 +151,10 @@ class Signal {
             "../../images/Bar85R.svg",
             "../../images/Bar90R.svg",
         ];
-        right_bar_image_paths.map(e => {
+        rightBarImage_paths.map(e => {
             var img = new Image();
             img.src = e;
-            this.right_bar_images.push(img);
+            this.rightBarImages.push(img);
         });
     }
     handleEvent(evt) {
@@ -252,21 +250,21 @@ class Signal {
         switch (this.pos) {
             case SignalPos.leftTop:
             case SignalPos.leftBottom:
-                ctx.drawImage(this.left_bar_images[this.left_bar_images.length - 1 - this.image_count], this.x - 10, this.y, this.width, this.height);
+                ctx.drawImage(this.leftBarImages[this.leftBarImages.length - 1 - this.image_count], this.x - 10, this.y, this.width, this.height);
                 break;
             case SignalPos.rightTop:
             case SignalPos.rightBottom:
-                ctx.drawImage(this.right_bar_images[this.left_bar_images.length - 1 - this.image_count], this.x - 55, this.y, this.width, this.height);
+                ctx.drawImage(this.rightBarImages[this.leftBarImages.length - 1 - this.image_count], this.x - 55, this.y, this.width, this.height);
                 break;
             default:
                 break;
         }
-        this.closing_count++;
-        if (this.closing_count > this.count_per_image_closing) {
-            this.closing_count = 0;
+        this.closingCount++;
+        if (this.closingCount > this.countPerImageClosing) {
+            this.closingCount = 0;
             this.image_count++;
         }
-        if (this.image_count > this.left_bar_images.length - 1) {
+        if (this.image_count > this.leftBarImages.length - 1) {
             this.image_count = 0;
             this.barState = BarState.closed;
         }
@@ -275,21 +273,21 @@ class Signal {
         switch (this.pos) {
             case SignalPos.leftTop:
             case SignalPos.leftBottom:
-                ctx.drawImage(this.left_bar_images[this.image_count], this.x - 10, this.y, this.width, this.height);
+                ctx.drawImage(this.leftBarImages[this.image_count], this.x - 10, this.y, this.width, this.height);
                 break;
             case SignalPos.rightTop:
             case SignalPos.rightBottom:
-                ctx.drawImage(this.right_bar_images[this.image_count], this.x - 55, this.y, this.width, this.height);
+                ctx.drawImage(this.rightBarImages[this.image_count], this.x - 55, this.y, this.width, this.height);
                 break;
             default:
                 break;
         }
-        this.opening_count++;
-        if (this.opening_count > this.count_per_image_opening) {
-            this.opening_count = 0;
+        this.openingCount++;
+        if (this.openingCount > this.countPerImageOpening) {
+            this.openingCount = 0;
             this.image_count++;
         }
-        if (this.image_count > this.left_bar_images.length - 1) {
+        if (this.image_count > this.leftBarImages.length - 1) {
             this.image_count = 0;
             this.barState = BarState.opened;
         }
@@ -298,11 +296,11 @@ class Signal {
         switch (this.pos) {
             case SignalPos.leftTop:
             case SignalPos.leftBottom:
-                ctx.drawImage(this.left_bar_images[18], this.x - 10, this.y, 300, 200);
+                ctx.drawImage(this.leftBarImages[18], this.x - 10, this.y, 300, 200);
                 break;
             case SignalPos.rightTop:
             case SignalPos.rightBottom:
-                ctx.drawImage(this.right_bar_images[18], this.x - 55, this.y, 300, 200);
+                ctx.drawImage(this.rightBarImages[18], this.x - 55, this.y, 300, 200);
                 break;
             default:
                 console.log('Error! SignalPos');
@@ -312,11 +310,11 @@ class Signal {
         switch (this.pos) {
             case SignalPos.leftTop:
             case SignalPos.leftBottom:
-                ctx.drawImage(this.left_bar_images[0], this.x - 10, this.y, 300, 200);
+                ctx.drawImage(this.leftBarImages[0], this.x - 10, this.y, 300, 200);
                 break;
             case SignalPos.rightTop:
             case SignalPos.rightBottom:
-                ctx.drawImage(this.right_bar_images[0], this.x - 55, this.y, 300, 200);
+                ctx.drawImage(this.rightBarImages[0], this.x - 55, this.y, 300, 200);
                 break;
             default:
                 console.log('Error! SignalPos');
@@ -327,17 +325,17 @@ class Signal {
     }
     blink() {
         // 点灯画像と消灯画像を交互に表示する。表示位置は遮断機の位置によって異なる。（４通り）
-        // 点滅間隔は this.blink_time で設定し、this.blink_count で制御する。
-        if (this.blink_flag) {
+        // 点滅間隔は this.blinkTime で設定し、this.blinkCount で制御する。
+        if (this.blinkFlag) {
             ctx.drawImage(this.on_off, this.x, this.y, this.width, this.height);
         }
         else {
             ctx.drawImage(this.off_on, this.x, this.y, this.width, this.height);
         }
-        this.blink_count++;
-        if (this.blink_count > this.blink_time) {
-            this.blink_count = 0;
-            this.blink_flag = !this.blink_flag;
+        this.blinkCount++;
+        if (this.blinkCount > this.blinkTime) {
+            this.blinkCount = 0;
+            this.blinkFlag = !this.blinkFlag;
         }
     }
     // private stopSound(){ // 警告音を停止する
@@ -403,7 +401,7 @@ canvas.width = 800;
 canvas.height = 600;
 // document.body.appendChild(canvas);
 const ctx = canvas.getContext("2d");
-let blink_flag = false;
+let blinkFlag = false;
 let train_inbound = false;
 let train_outbound = false;
 const inboundTrain = new Train(TrainBound.inbound);
