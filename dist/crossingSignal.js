@@ -1,7 +1,5 @@
 "use strict";
 
-// const { TouchBarScrubber } = require("electron");
-
 
 //----------------------------------------------------------------------------
 // ここから Signal クラス
@@ -434,6 +432,7 @@ class Train {
     }
     run() {
         this.x += this.speed;
+        // console.log(this.x);
         if (this.bound == TrainBound.outbound) {
             this.checkOutboundSensor();
 
@@ -443,6 +442,8 @@ class Train {
                 this.x = this.defaultXPos;
                 console.log('run(): inbound this.pos = outOfArea.');
                 console.log('run(): x = %d', this.x);
+                outboundInActiveTrains.push(this);
+                outboundActiveTrains.shift();
             }
         }
         if (this.bound == TrainBound.inbound) {
@@ -454,6 +455,8 @@ class Train {
                 this.x = this.defaultXPos;
                 console.log('run(): outbound this.pos = outOfArea.');
                 console.log('run(): x = %d', this.x);
+                inboundInActiveTrains.push(this);
+                inboundActiveTrains.shift();
             }
         }
     }
@@ -546,7 +549,129 @@ class Train {
 }
 // Train クラスここまで
 //---------------------------------------------------------
+// Car class start 
+var CarBound;
+(function (CarBound) {
+    CarBound[CarBound["up"] = 0] = "up";
+    CarBound[CarBound["down"] = 1] = "down";
+})(CarBound || (CarBound = {}));
+var CarPos;
+(function (CarPos) {
+    CarPos[CarPos["inArea"] = 0] = "inArea";
+    CarPos[CarPos["outOfArea"] = 1] = "outOfArea";
+})(CarPos || (CarPos = {}));
 
+var CarType;
+(function (CarType) {
+    CarType[CarType["sedan"] = 0] = "sedan";
+    CarType[CarType["wagon"] = 1] = "wagon";
+    CarType[CarType["truck"] = 2] = "truck";
+})(CarType || (CarType = {}));
+
+class Car{
+    static waitCount = 0;
+    constructor(bound, cartype){
+        this.left = canvas.width * 0.36;
+        this.right = canvas.width * 0.48;
+        this.length = 40;
+        // this.defaultUpYPos = -this.length - canvas.height * 0.5;
+        this.defaultUpYPos =  canvas.height * 0.93;
+        this.upStopYPos =  canvas.height * 0.7;
+        this.defaultDownYPos = canvas.height * (-0.25);
+        this.downStopYPos = canvas.height * (-0.02);
+        this.defaultYPos = 0;
+        this.pos = CarPos.outOfArea;
+        this.x = 0;
+        this.y = 0;
+        this.speed = 0;
+        this.bound = bound;
+        this.width = 100; 
+        this.height = 150;
+        this.image = new Image();
+        this.lengthRatio = 4;
+        // this.posState = PosState.before
+        switch (bound) {
+            case CarBound.up:
+                this.defaultYPos = this.defaultUpYPos;
+                this.x = this.left;
+                this.y = this.defaultYPos;
+                // this.image.src = "../images/topview_car_up.png";
+                switch(cartype){
+                    case CarType.sedan:
+                        this.image.src = "../images/topview_car_up.png";
+                        break;
+                    case CarType.wagon:
+                        this.image.src = "../images/topview_car_wagon_up.png";
+                        break;
+                    case CarType.truck:
+                        this.image.src = "../images/topview_car_truck_up.png";
+                        break;
+                    default:
+                        ;
+                }
+                this.speed = -5;
+                break;
+            case CarBound.down:
+                this.defaultYPos = this.defaultDownYPos;
+                this.x = this.right;
+                this.y = this.defaultYPos;
+                // this.image.src = "../images/topview_car_Down.svg";
+                switch(cartype){
+                    case CarType.sedan:
+                        this.image.src = "../images/topview_car_Down.svg";
+                        break;
+                    case CarType.wagon:
+                        this.image.src = "../images/topview_car_wagon_Down.svg";
+                        break;
+                    case CarType.truck:
+                        this.image.src = "../images/topview_car_truck_Down.svg";
+                        break;
+                    default:
+                        ;
+                }
+                this.speed = 5;
+                break;
+            default:
+                ;
+        }
+    }
+    draw(){
+        // if (this.pos == TrainPos.inArea) {
+            ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+            this.run();
+        // }       
+    }
+    run(){
+        this.y += this.speed;
+        if (this.bound == CarBound.up) {
+            // this.checkOutboundSensor();
+
+            if (this.y + this.length + canvas.height * 0.25 < 0) {
+                this.pos = CarPos.outOfArea;
+                // this.posState = PosState.before;
+                this.y = this.defaultYPos;
+                console.log('run(): up this.pos = outOfArea.');
+                console.log('run(): y = %d', this.y);
+                upInActiveCars.push(this);
+                upActiveCars.shift();
+            }
+        }
+        if (this.bound == CarBound.down) {
+            // this.checkInboundSensor();
+
+            if (this.y + this.length > canvas.height) {
+                this.pos = CarPos.outOfArea;
+                // this.posState = PosState.before;
+                this.y = this.defaultYPos;
+                console.log('run(): down this.pos = outOfArea.');
+                console.log('run(): y = %d', this.y);
+                downInActiveCars.push(this);
+                downActiveCars.shift();
+            }
+        }
+    }
+}
+//-- Car class end --------------------------------------------------------
 //----------------------------------------------------------------------
 // Node.jsの機能は使えないので preload.js で最低限の機能のみ参照できるようにする
 // const { ipcRenderer } = require('electron')
@@ -584,14 +709,41 @@ canvas.height = 600;
 // document.body.appendChild(canvas);
 const ctx = canvas.getContext("2d");
 let blinkFlag = false;
-let train_inbound = false;
-let train_outbound = false;
-const inboundTrain = new Train(TrainBound.inbound);
-const outboundTrain = new Train(TrainBound.outbound);
 const signalLeftTop = new Signal(SignalPos.leftTop);
 const signalLeftBottom = new Signal(SignalPos.leftBottom);
 const signalRightTop = new Signal(SignalPos.rightTop);
 const signalRightBottom = new Signal(SignalPos.rightBottom);
+
+// const inboundTrain = new Train(TrainBound.inbound);
+// const outboundTrain = new Train(TrainBound.outbound);
+let inboundInActiveTrains = [];
+let inboundActiveTrains = [];
+let outboundInActiveTrains = [];
+let outboundActiveTrains = [];
+
+// const upCar = new Car(CarBound.up);
+// const downCar = new Car(CarBound.down);
+let upInActiveCars = [];
+let upActiveCars = [];
+let downInActiveCars = [];
+let downActiveCars = [];
+
+window.addEventListener("load", () => {
+    const trainMaxNum = 5;
+    for(let i = 0; i < trainMaxNum; ++i){
+        inboundInActiveTrains.push(new Train(TrainBound.inbound));
+        outboundInActiveTrains.push(new Train(TrainBound.outbound));
+    }
+    // const carMaxNum = 3;
+    // for(let i = 0; i < carMaxNum; ++i){
+    upInActiveCars.push(new Car(CarBound.up, CarType.sedan));
+    upInActiveCars.push(new Car(CarBound.up, CarType.wagon));
+    upInActiveCars.push(new Car(CarBound.up, CarType.truck));
+    downInActiveCars.push(new Car(CarBound.down, CarType.sedan));
+    downInActiveCars.push(new Car(CarBound.down, CarType.wagon));
+    downInActiveCars.push(new Car(CarBound.down, CarType.truck));
+    // }
+})
 
 
 function drawAll() {
@@ -603,12 +755,40 @@ function drawAll() {
     drawInboundTrains();
     drawOutboundTrains();
     drawOutboundSignals();
+    drawCars();
 }
+function drawCars(){
+    Car.waitCount++;
+    if(Car.waitCount > 50){
+        Car.waitCount = 0;
+        upActiveCars.push(upInActiveCars[0]);
+        upInActiveCars.shift();
+        downActiveCars.push(downInActiveCars[0]);
+        downInActiveCars.shift();
+    }
+    drawUpCars();
+    drawDownCars();
+}
+function drawUpCars() {
+    // upCar.draw();
+    upActiveCars.map(car => car.draw());
+}
+function drawDownCars() {
+    // downCar.draw();
+    // downInActiveCars[2].draw();
+    downActiveCars.map(car => car.draw());
+}
+
 function drawOutboundTrains() {
-    outboundTrain.draw();
+    // outboundTrain.draw();
+    outboundActiveTrains.map(train => train.draw());
 }
 function drawInboundTrains() {
-    inboundTrain.draw();
+    inboundActiveTrains.map(train => {
+        // console.log(train.getXPos());
+        train.draw();
+    });
+    // inboundTrain.draw();
 }
 function drawOutboundSignals() {
     signalLeftBottom.draw();
@@ -622,11 +802,17 @@ setInterval(drawAll, 90);
 
 function trainInbound() {
     console.log("上り電車が来た！");
-    inboundTrain.handleEvent(EventToTrain.runInbound);
+    // inboundTrain.handleEvent(EventToTrain.runInbound);
+    inboundActiveTrains.push(inboundInActiveTrains[0]);
+    inboundInActiveTrains.shift();
+    inboundActiveTrains.map(train => train.handleEvent(EventToTrain.runInbound));
 }
 function trainOutbound() {
     console.log("下り電車が来た！");
-    outboundTrain.handleEvent(EventToTrain.runOutbound);
+    // outboundTrain.handleEvent(EventToTrain.runOutbound);
+    outboundActiveTrains.push(outboundInActiveTrains[0]);
+    outboundInActiveTrains.shift();
+    outboundActiveTrains.map(train => train.handleEvent(EventToTrain.runOutbound));
 }
 function barUp() {
     console.log('遮断バーを上げて！');
