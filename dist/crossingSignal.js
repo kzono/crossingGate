@@ -570,6 +570,7 @@ var CarType;
 
 class Car{
     static waitCount = 0;
+    static nextWait = 50;
     constructor(bound, cartype){
         this.left = canvas.width * 0.36;
         this.right = canvas.width * 0.48;
@@ -734,15 +735,16 @@ window.addEventListener("load", () => {
         inboundInActiveTrains.push(new Train(TrainBound.inbound));
         outboundInActiveTrains.push(new Train(TrainBound.outbound));
     }
-    // const carMaxNum = 3;
-    // for(let i = 0; i < carMaxNum; ++i){
-    upInActiveCars.push(new Car(CarBound.up, CarType.sedan));
-    upInActiveCars.push(new Car(CarBound.up, CarType.wagon));
-    upInActiveCars.push(new Car(CarBound.up, CarType.truck));
-    downInActiveCars.push(new Car(CarBound.down, CarType.sedan));
-    downInActiveCars.push(new Car(CarBound.down, CarType.wagon));
-    downInActiveCars.push(new Car(CarBound.down, CarType.truck));
-    // }
+    const carMaxNum = 10;
+    let type;
+    for(let i = 0; i < carMaxNum; ++i){
+    // upInActiveCars.push(new Car(CarBound.up, CarType.sedan));
+        type = Math.round((Math.random() * 10)) % 3;
+        upInActiveCars.push(new Car(CarBound.up, type));
+        type = Math.round((Math.random() * 10)) % 3;
+        // downInActiveCars.push(new Car(CarBound.down, CarType.sedan));
+        downInActiveCars.push(new Car(CarBound.down, type));
+    }
 })
 
 
@@ -759,8 +761,10 @@ function drawAll() {
 }
 function drawCars(){
     Car.waitCount++;
-    if(Car.waitCount > 50){
+    // if(Car.waitCount > 50){
+    if(Car.waitCount > Car.nextWait){
         Car.waitCount = 0;
+        Car.nextWait = 30 + Math.round((Math.random() * 75));
         upActiveCars.push(upInActiveCars[0]);
         upInActiveCars.shift();
         downActiveCars.push(downInActiveCars[0]);
