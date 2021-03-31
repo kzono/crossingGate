@@ -200,6 +200,23 @@ class Signal {
                     default:
                         ;
                 }
+                switch (this.pos) {
+                    case SignalPos.leftTop:
+                        ipcRenderer.send('asynchronous-message', 'bar_closing_left_top');
+                        break;
+                    case SignalPos.leftBottom:
+                        ipcRenderer.send('asynchronous-message', 'bar_closing_left_bottom');
+                        break;
+                    case SignalPos.rightTop:
+                        ipcRenderer.send('asynchronous-message', 'bar_closing_right_top');
+                        break;
+                    case SignalPos.rightBottom:
+                        ipcRenderer.send('asynchronous-message', 'bar_closing_right_bottom');
+                        break;
+                    default:
+                        break;
+                }
+
                 break;
             case EventToSignal.open:
                 switch (this.barState) {
@@ -218,6 +235,23 @@ class Signal {
                     default:
                         ;
                 }
+                switch (this.pos) {
+                    case SignalPos.leftTop:
+                        ipcRenderer.send('asynchronous-message', 'bar_opening_left_top');
+                        break;
+                    case SignalPos.leftBottom:
+                        ipcRenderer.send('asynchronous-message', 'bar_opening_left_bottom');
+                        break;
+                    case SignalPos.rightTop:
+                        ipcRenderer.send('asynchronous-message', 'bar_opening_right_top');
+                        break;
+                    case SignalPos.rightBottom:
+                        ipcRenderer.send('asynchronous-message', 'bar_opening_right_bottom');
+                        break;
+                    default:
+                        break;
+                }
+
                 break;
             default:
                 ;
@@ -270,14 +304,30 @@ class Signal {
             default:
                 break;
         }
-        this.closingCount++;
-        if (this.closingCount > this.countPerImageClosing) {
-            this.closingCount = 0;
+        this.openingCount++;
+        if (this.openingCount > this.countPerImageClosing) {
+            this.openingCount = 0;
             this.image_count++;
         }
         if (this.image_count > this.leftBarImages.length - 1) {
             this.image_count = 0;
             this.barState = BarState.closed;
+            switch (this.pos) {
+                case SignalPos.leftTop:
+                    ipcRenderer.send('asynchronous-message', 'bar_closed_left_top');
+                    break;
+                case SignalPos.leftBottom:
+                    ipcRenderer.send('asynchronous-message', 'bar_closed_left_bottom');
+                    break;
+                case SignalPos.rightTop:
+                    ipcRenderer.send('asynchronous-message', 'bar_closed_right_top');
+                    break;
+                case SignalPos.rightBottom:
+                    ipcRenderer.send('asynchronous-message', 'bar_closed_right_bottom');
+                    break;
+                default:
+                    break;
+            }
         }
     }
     drawOpeningBar() {
@@ -301,6 +351,22 @@ class Signal {
         if (this.image_count > this.leftBarImages.length - 1) {
             this.image_count = 0;
             this.barState = BarState.opened;
+            switch (this.pos) {
+                case SignalPos.leftTop:
+                    ipcRenderer.send('asynchronous-message', 'bar_opened_left_top');
+                    break;
+                case SignalPos.leftBottom:
+                    ipcRenderer.send('asynchronous-message', 'bar_opened_left_bottom');
+                    break;
+                case SignalPos.rightTop:
+                    ipcRenderer.send('asynchronous-message', 'bar_opened_right_top');
+                    break;
+                case SignalPos.rightBottom:
+                    ipcRenderer.send('asynchronous-message', 'bar_opened_right_bottom');
+                    break;
+                default:
+                    break;
+            }            
         }
     }
     drawOpenedBar() {
@@ -479,28 +545,28 @@ class Train {
                 if(this.left < this.x){
                     this.posState = PosState.entering;
                     console.log("entering");
-                    ipcRenderer.send('asynchronous-message', 'entering');
+                    ipcRenderer.send('asynchronous-message', 'inbound_entering');
                 }
                 break;
             case PosState.entering:
                 if(this.left < this.x - this.getLength()*this.lengthRatio){
                     this.posState = PosState.passing;
                     console.log("passing");
-                    ipcRenderer.send('asynchronous-message', 'passing');
+                    ipcRenderer.send('asynchronous-message', 'inbound_passing');
                 }
                 break;
             case PosState.passing:
                 if(this.right < this.x){
                     this.posState = PosState.exiting;
                     console.log("exiting");
-                    ipcRenderer.send('asynchronous-message', 'exiting');
+                    ipcRenderer.send('asynchronous-message', 'inbound_exiting');
                 }
                 break;
             case PosState.exiting:
                 if(this.right < this.x - this.getLength()*this.lengthRatio){
                     this.posState = PosState.after;
                     console.log("after");
-                    ipcRenderer.send('asynchronous-message', 'after');
+                    ipcRenderer.send('asynchronous-message', 'inbound_after');
                 }
                 break;
             case PosState.after:
@@ -516,28 +582,28 @@ class Train {
                 if(this.right > this.x - this.getLength() * this.lengthRatio){
                     this.posState = PosState.entering;
                     console.log("entering");
-                    ipcRenderer.send('asynchronous-message', 'entering');
+                    ipcRenderer.send('asynchronous-message', 'outbound_entering');
                 }
                 break;
             case PosState.entering:
                 if(this.right > this.x){
                     this.posState = PosState.passing;
                     console.log("passing");
-                    ipcRenderer.send('asynchronous-message', 'passing');
+                    ipcRenderer.send('asynchronous-message', 'outbound_passing');
                 }
                 break;
             case PosState.passing:
                 if(this.left > this.x - this.getLength() * this.lengthRatio){
                     this.posState = PosState.exiting;
                     console.log("exiting");
-                    ipcRenderer.send('asynchronous-message', 'exiting');
+                    ipcRenderer.send('asynchronous-message', 'outbound_exiting');
                 }
                 break;
             case PosState.exiting:
                 if(this.left > this.x){
                     this.posState = PosState.after;
                     console.log("after");
-                    ipcRenderer.send('asynchronous-message', 'after');
+                    ipcRenderer.send('asynchronous-message', 'outbound_after');
                 }
                 break;
             case PosState.after:
@@ -785,14 +851,14 @@ ipcRenderer.on('asynchronous-reply', (event, arg) => {
 // ipcRenderer.send('asynchronous-message', 'ping');
 
 
-const btnInbound = document.querySelector('.btn-inbound');
-btnInbound.addEventListener('click', function (clickEvent) {
-    ipcRenderer.send('asynchronous-message', 'inbound enter');
-})
-const btnOutbound = document.querySelector('.btn-outbound');
-btnOutbound.addEventListener('click', function (clickEvent) {
-    ipcRenderer.send('asynchronous-message', 'outbound enter');
-})
+// const btnInbound = document.querySelector('.btn-inbound');
+// btnInbound.addEventListener('click', function (clickEvent) {
+//     ipcRenderer.send('asynchronous-message', 'inbound enter');
+// })
+// const btnOutbound = document.querySelector('.btn-outbound');
+// btnOutbound.addEventListener('click', function (clickEvent) {
+//     ipcRenderer.send('asynchronous-message', 'outbound enter');
+// })
 
 
 
@@ -916,7 +982,6 @@ function drawInboundSignals() {
     signalLeftTop.draw();
     signalRightTop.draw();
 }
-// setInterval(drawAll, 300);
 setInterval(drawAll, 90);
 
 function trainInbound() {
@@ -935,17 +1000,9 @@ function trainOutbound() {
 }
 function barUp() {
     console.log('遮断バーを上げて！');
-    signalLeftTop.handleEvent(EventToSignal.open);
-    signalLeftBottom.handleEvent(EventToSignal.open);
-    signalRightTop.handleEvent(EventToSignal.open);
-    signalRightBottom.handleEvent(EventToSignal.open);
 }
 function barDown() {
     console.log('遮断バーを下げて！');
-    signalLeftTop.handleEvent(EventToSignal.close);
-    signalLeftBottom.handleEvent(EventToSignal.close);
-    signalRightTop.handleEvent(EventToSignal.close);
-    signalRightBottom.handleEvent(EventToSignal.close);
 }
 function startSound() {
     signalLeftBottom.handleEvent(EventToSignal.startSound);
@@ -982,10 +1039,23 @@ let pollingEvent = () => {
         startBlink();
     }else if('STOP_BLINK' == evt){
         stopBlink();
-    }else if('BAR_DOWN' == evt){
-        barDown();
-    }else if('BAR_UP' == evt){
+    }else if('BAR_DOWN_LEFT_TOP' == evt){
+        signalLeftTop.handleEvent(EventToSignal.close);
+    }else if('BAR_DOWN_LEFT_BOTTOM' == evt){
+        signalLeftBottom.handleEvent(EventToSignal.close);
+    }else if('BAR_DOWN_RIGHT_TOP' == evt){
+        signalRightTop.handleEvent(EventToSignal.close);
+    }else if('BAR_DOWN_RIGHT_BOTTOM' == evt){
+        signalRightBottom.handleEvent(EventToSignal.close);
+    }else if('BAR_UP_LEFT_TOP' == evt){
+        signalLeftTop.handleEvent(EventToSignal.open);
+    }else if('BAR_UP_LEFT_BOTTOM' == evt){
+        signalLeftBottom.handleEvent(EventToSignal.open);
+    }else if('BAR_UP_RIGHT_TOP' == evt){
+        signalRightTop.handleEvent(EventToSignal.open);
         barUp();
+    }else if('BAR_UP_RIGHT_BOTTOM' == evt){
+        signalRightBottom.handleEvent(EventToSignal.open);
     }
   }
 }
