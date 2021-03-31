@@ -561,6 +561,13 @@ var CarPos;
     CarPos[CarPos["outOfArea"] = 1] = "outOfArea";
 })(CarPos || (CarPos = {}));
 
+var CarPosState;
+(function (CarPosState) {
+    CarPosState[CarPosState["before"] = 0] = "before";
+    CarPosState[CarPosState["passing"] = 1] = "passing";
+    CarPosState[CarPosState["passing"] = 1] = "passing";
+})(CarPosState || (CarPosState = {}));
+
 var CarType;
 (function (CarType) {
     CarType[CarType["sedan"] = 0] = "sedan";
@@ -571,17 +578,18 @@ var CarType;
 class Car{
     static waitCount = 0;
     static nextWait = 50;
+    static length = 150;
     constructor(bound, cartype){
         this.left = canvas.width * 0.36;
         this.right = canvas.width * 0.48;
-        this.length = 40;
         // this.defaultUpYPos = -this.length - canvas.height * 0.5;
         this.defaultUpYPos =  canvas.height * 0.93;
-        this.upStopYPos =  canvas.height * 0.7;
+        this.upStopYPos =  canvas.height * 0.68;
         this.defaultDownYPos = canvas.height * (-0.25);
         this.downStopYPos = canvas.height * (-0.02);
         this.defaultYPos = 0;
         this.pos = CarPos.outOfArea;
+        this.posState = CarPosState.before;
         this.x = 0;
         this.y = 0;
         this.speed = 0;
@@ -636,6 +644,34 @@ class Car{
                 ;
         }
     }
+    getDistance(){
+        let no = 0;
+        if(this.CarBound == CarBound.up){
+            for(let i=0; i< upActiveCars.length; ++i){
+                if(upActiveCars[i] == this){
+                    no = i;
+                    break;
+                }
+            }
+            if(no == 0){ // first
+                return 2 * this.length;
+            }else{
+                return this.y - upActiveCars[no - 1].y;
+            }
+        }else{ // CarBound.down
+            for(let i=0; i< downActiveCars.length; ++i){
+                if(downActiveCars[i] == this){
+                    no = i;
+                    break;
+                }
+            }
+            if(no == 0){ // first
+                return 2 * this.length;
+            }else{
+                return this.y - upActiveCars[no - 1].y;
+            }
+        }
+    }
     draw(){
         // if (this.pos == TrainPos.inArea) {
             ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
@@ -643,29 +679,91 @@ class Car{
         // }       
     }
     run(){
+        // if(this.length < this.getDistance()){
+        //     this.y += this.speed;
+        // }
+        // console.log(this.y);
+        switch(this.bound){
+            case CarBound.up:
+                switch(this.posState){
+                    case CarPosState.before:
+                        // console.log(this.y);
+                        if(this.y < this.upStopYPos && (this.y + this.speed) < this.upStopYPos){
+                            if(signalLeftBottom.barState == BarState.closed ||
+                                signalLeftBottom.barState == BarState.closing){
+                                return;
+                            }
+                        }
+                        if(this.y < this.upStopYPos){
+                            this.posState = CarPosState.passing;
+                            // console.log("up passing");
+                        }
+                    break;
+                    case CarPosState.passing:
+                        if(this.y < this.downStopYPos){
+                            this.posState = CarPosState.after;
+                            // console.log("up after");
+                        }
+                        break;
+                    case CarPosState.after:
+                        break;
+                    default:
+                        // console.log("error!  default");
+                }
+                break;
+            case CarBound.down:
+                switch(this.posState){
+                    case CarPosState.before:
+                        if(this.y < this.upStopYPos && (this.y + this.speed) > this.downStopYPos){
+                            if(signalRightTop.barState == BarState.closed ||
+                                signalRightTop.barState == BarState.closing){
+                                return;
+                            }
+                        }
+                        if(this.y > this.downStopYPos){
+                            this.posState = CarPosState.passing;
+                            // console.log("down passing");
+                        }
+                        break;
+                    case CarPosState.passing:
+                        if(this.y > this.upStopYPos){
+                            this.posState = CarPosState.after;
+                            // console.log("down after");
+                        }
+                        break;
+                    case CarPosState.after:
+                        break;
+                    default:
+                }
+                break;
+            default:
+                break;
+        }
+
         this.y += this.speed;
+
         if (this.bound == CarBound.up) {
-            // this.checkOutboundSensor();
 
             if (this.y + this.length + canvas.height * 0.25 < 0) {
                 this.pos = CarPos.outOfArea;
-                // this.posState = PosState.before;
+                this.CarPosState = CarPosState.before;
+                // console.log("up before");
                 this.y = this.defaultYPos;
-                console.log('run(): up this.pos = outOfArea.');
-                console.log('run(): y = %d', this.y);
+                // console.log('run(): up this.pos = outOfArea.');
+                // console.log('run(): y = %d', this.y);
                 upInActiveCars.push(this);
                 upActiveCars.shift();
             }
         }
         if (this.bound == CarBound.down) {
-            // this.checkInboundSensor();
 
             if (this.y + this.length > canvas.height) {
                 this.pos = CarPos.outOfArea;
-                // this.posState = PosState.before;
+                this.carPosState = CarPosState.before;
+                // console.log("down before");
                 this.y = this.defaultYPos;
-                console.log('run(): down this.pos = outOfArea.');
-                console.log('run(): y = %d', this.y);
+                // console.log('run(): down this.pos = outOfArea.');
+                // console.log('run(): y = %d', this.y);
                 downInActiveCars.push(this);
                 downActiveCars.shift();
             }
@@ -764,23 +862,39 @@ function drawCars(){
     // if(Car.waitCount > 50){
     if(Car.waitCount > Car.nextWait){
         Car.waitCount = 0;
-        Car.nextWait = 30 + Math.round((Math.random() * 75));
-        upActiveCars.push(upInActiveCars[0]);
-        upInActiveCars.shift();
-        downActiveCars.push(downInActiveCars[0]);
-        downInActiveCars.shift();
+        Car.nextWait = 70 + Math.round((Math.random() * 75));
+        upActiveCars.push(upInActiveCars.shift());
+        downActiveCars.push(downInActiveCars.shift());
     }
     drawUpCars();
     drawDownCars();
 }
 function drawUpCars() {
     // upCar.draw();
-    upActiveCars.map(car => car.draw());
+    // upActiveCars.map(car => car.draw());
+    if(0 == upActiveCars.length) return;
+    upActiveCars[0].draw();
+    for(let i = 0; i < upActiveCars.length - 1; i++){
+        let distance = upActiveCars[i+1].y - upActiveCars[i].y;
+        // console.log("%d: %d", i ,distance);
+        if(distance > Car.length*1.1){
+            upActiveCars[i+1].draw();
+        }
+    }
 }
 function drawDownCars() {
     // downCar.draw();
     // downInActiveCars[2].draw();
-    downActiveCars.map(car => car.draw());
+    // downActiveCars.map(car => car.draw());
+    if(0 == downActiveCars.length) return;
+    downActiveCars[0].draw();
+    for(let i = 0; i < downActiveCars.length - 1; i++){
+        let distance = downActiveCars[i].y - downActiveCars[i+1].y;
+        // console.log("%d: %d", i ,distance);
+        if(distance > Car.length*1.1){
+            downActiveCars[i+1].draw();
+        }
+    }
 }
 
 function drawOutboundTrains() {
@@ -802,6 +916,7 @@ function drawInboundSignals() {
     signalLeftTop.draw();
     signalRightTop.draw();
 }
+// setInterval(drawAll, 300);
 setInterval(drawAll, 90);
 
 function trainInbound() {
