@@ -8,7 +8,8 @@
     border-radius: 3px;
     position:relative;
     top: 50px;
-    left:275px;
+    left:70px;
+    /* left:275px; */
   }
   .btn-inbound:active {
     /*ボタンを押したとき*/
@@ -18,7 +19,8 @@
     border-bottom: none;
     position:relative;
     top: 50px;
-    left:275;
+    left:70px;
+    /* left:275; */
   }
 
   .btn-outbound {
@@ -31,7 +33,8 @@
     border-radius: 3px;
     position:relative;
     top: 50px;
-    left:700px;
+    /* left:700px; */
+    left:280px;
   }
   .btn-outbound:active {
     /*ボタンを押したとき*/
@@ -41,7 +44,8 @@
     border-bottom: none;
     position:relative;
     top: 50px;
-    left:700px;
+    left:280px;
+    /* left:700px; */
   }
 
 

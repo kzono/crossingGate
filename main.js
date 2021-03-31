@@ -20,8 +20,12 @@ const path = require('path')
 function createWindow () {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 1020,
+    // width: 1280,
+    // height: 1020,
+    // width: 800,
+    // height: 600,
+    width: 500,
+    height: 375,
     webPreferences: {
       nodeIntegration: false, // <----  この２行を追加しないと動かない。
       // nodeIntegration: true, // <----  

@@ -62,6 +62,8 @@ var SignalState;
 })(SignalState || (SignalState = {}));
 
 class Signal {
+    // static barOffsetRatioLeft = 0.04;
+    // static barOffsetRatioRight = 0.17;
     constructor(pos) {
         this.lampState = LampState.noblink;
         this.barState = BarState.opened;
@@ -73,12 +75,20 @@ class Signal {
         this.countPerImageOpening = 1; // 遮断バーを上げるとき、画像１枚あたりの表示回数
         this.openingCount = 0; // countPerImageOpening になるまでの表示回数のカウンター 
         this.image_count = 0;
-        this.width = 300; // 信号機画像の幅
-        this.height = 200; // 信号機画像の幅
+        // this.width = 300; // 信号機画像の幅
+        // this.height = 200; // 信号機画像の幅
+        // this.width = 150; // 信号機画像の幅
+        // this.height = 100; // 信号機画像の幅
+        this.width = canvas.width * 0.25; // 信号機画像の幅
+        this.height = canvas.height * 0.3; // 信号機画像の幅
         this.sound = new Audio('../sounds/Railroad_Crossing-Signal.mp3');
         this.pos = pos;
-        const left = canvas.width * 0.20;
-        const right = canvas.width * 0.50;
+        // const left = canvas.width * 0.20;
+        // const right = canvas.width * 0.50;
+        const left = canvas.width * 0.25;
+        const right = canvas.width * 0.55;
+        // this.barLeft = this.x - this.width * barOffsetRatioLeft;
+        // this.barRight = this.x - this.width * barOffsetRatioRight;
         // const top = 0;
         const top = 10;
         // const bottom = canvas.height * 0.50;
@@ -295,11 +305,13 @@ class Signal {
         switch (this.pos) {
             case SignalPos.leftTop:
             case SignalPos.leftBottom:
-                ctx.drawImage(this.leftBarImages[this.leftBarImages.length - 1 - this.image_count], this.x - 10, this.y, this.width, this.height);
+                // ctx.drawImage(this.leftBarImages[this.leftBarImages.length - 1 - this.image_count], this.x - 10, this.y, this.width, this.height);
+                ctx.drawImage(this.leftBarImages[this.leftBarImages.length - 1 - this.image_count], this.x - this.width * 0.04, this.y, this.width, this.height);
                 break;
             case SignalPos.rightTop:
             case SignalPos.rightBottom:
-                ctx.drawImage(this.rightBarImages[this.leftBarImages.length - 1 - this.image_count], this.x - 55, this.y, this.width, this.height);
+                // ctx.drawImage(this.rightBarImages[this.leftBarImages.length - 1 - this.image_count], this.x - 55, this.y, this.width, this.height);
+                ctx.drawImage(this.rightBarImages[this.leftBarImages.length - 1 - this.image_count], this.x - this.width * 0.17, this.y, this.width, this.height);
                 break;
             default:
                 break;
@@ -334,11 +346,13 @@ class Signal {
         switch (this.pos) {
             case SignalPos.leftTop:
             case SignalPos.leftBottom:
-                ctx.drawImage(this.leftBarImages[this.image_count], this.x - 10, this.y, this.width, this.height);
+                // ctx.drawImage(this.leftBarImages[this.image_count], this.x - 10, this.y, this.width, this.height);
+                ctx.drawImage(this.leftBarImages[this.image_count], this.x - this.width * 0.04, this.y, this.width, this.height);
                 break;
             case SignalPos.rightTop:
             case SignalPos.rightBottom:
-                ctx.drawImage(this.rightBarImages[this.image_count], this.x - 55, this.y, this.width, this.height);
+                // ctx.drawImage(this.rightBarImages[this.image_count], this.x - 55, this.y, this.width, this.height);
+                ctx.drawImage(this.rightBarImages[this.image_count], this.x - this.width * 0.17, this.y, this.width, this.height);
                 break;
             default:
                 break;
@@ -373,11 +387,13 @@ class Signal {
         switch (this.pos) {
             case SignalPos.leftTop:
             case SignalPos.leftBottom:
-                ctx.drawImage(this.leftBarImages[18], this.x - 10, this.y, 300, 200);
+                // ctx.drawImage(this.leftBarImages[18], this.x - 10, this.y, this.width, this.height);
+                ctx.drawImage(this.leftBarImages[18], this.x - this.width * 0.04 , this.y, this.width, this.height);
                 break;
             case SignalPos.rightTop:
             case SignalPos.rightBottom:
-                ctx.drawImage(this.rightBarImages[18], this.x - 55, this.y, 300, 200);
+                // ctx.drawImage(this.rightBarImages[18], this.x - 55, this.y, this.width, this.height);
+                ctx.drawImage(this.rightBarImages[18], this.x - this.width * 0.17, this.y, this.width, this.height);
                 break;
             default:
                 console.log('Error! SignalPos');
@@ -387,11 +403,13 @@ class Signal {
         switch (this.pos) {
             case SignalPos.leftTop:
             case SignalPos.leftBottom:
-                ctx.drawImage(this.leftBarImages[0], this.x - 10, this.y, 300, 200);
+                // ctx.drawImage(this.leftBarImages[0], this.x - 10, this.y, this.width, this.height);
+                ctx.drawImage(this.leftBarImages[0], this.x - this.width * 0.04, this.y, this.width, this.height);
                 break;
             case SignalPos.rightTop:
             case SignalPos.rightBottom:
-                ctx.drawImage(this.rightBarImages[0], this.x - 55, this.y, 300, 200);
+                // ctx.drawImage(this.rightBarImages[0], this.x - 55, this.y, this.width, this.height);
+                ctx.drawImage(this.rightBarImages[0], this.x - this.width * 0.17, this.y, this.width, this.height);
                 break;
             default:
                 console.log('Error! SignalPos');
@@ -449,7 +467,8 @@ var PosState;
 
 class Train {
     constructor(bound) {
-        this.length = 40;
+        // this.length = 40;
+        this.length = canvas.width * 0.05;
         this.defaultInboundXPos = -this.length - canvas.width*0.3;
         this.defaultOutboundXPos = canvas.width * 0.9;
         this.defaultXPos = 0;
@@ -459,8 +478,10 @@ class Train {
         this.speed = 0;
         this.bound = bound;
         this.image = new Image();
-        this.left = -100;
-        this.right = 400;
+        // this.left = -100;
+        // this.right = 400;
+        this.left = -50;
+        this.right = 200;
         this.lengthRatio = 4;
         this.posState = PosState.before;
 
@@ -468,14 +489,16 @@ class Train {
             case TrainBound.inbound:
                 this.defaultXPos = this.defaultInboundXPos;
                 this.x = this.defaultXPos;
-                this.y = canvas.height * (-0.51);
+                // this.y = canvas.height * (-0.51);
+                this.y = canvas.height * (-0.19);
                 this.image.src = "../images/train_R.svg";
                 this.speed = 5;
                 break;
             case TrainBound.outbound:
                 this.defaultXPos = this.defaultOutboundXPos;
                 this.x = this.defaultXPos;
-                this.y = canvas.height * (-0.29);
+                // this.y = canvas.height * (-0.29);
+                this.y = canvas.height * (-0.02);
                 this.image.src = "../images/train_L.svg";
                 this.speed = -5;
                 break;
@@ -532,7 +555,8 @@ class Train {
     }
     draw() {
         if (this.pos == TrainPos.inArea) {
-            ctx.drawImage(this.image, this.x, this.y);
+            // ctx.drawImage(this.image, this.x, this.y);
+            ctx.drawImage(this.image, this.x, this.y, canvas.width * 0.9 , canvas.height * 0.9);
             this.run();
         }
     }
@@ -645,9 +669,10 @@ class Car{
     static waitCount = 0;
     static nextWait = 50;
     static length = 150;
+    static defaultSpeed = 3;
     constructor(bound, cartype){
-        this.left = canvas.width * 0.36;
-        this.right = canvas.width * 0.48;
+        this.left = canvas.width * 0.38;
+        this.right = canvas.width * 0.475;
         // this.defaultUpYPos = -this.length - canvas.height * 0.5;
         this.defaultUpYPos =  canvas.height * 0.93;
         this.upStopYPos =  canvas.height * 0.68;
@@ -660,8 +685,10 @@ class Car{
         this.y = 0;
         this.speed = 0;
         this.bound = bound;
-        this.width = 100; 
-        this.height = 150;
+        // this.width = 100; 
+        // this.height = 150;
+        this.width = canvas.width * 0.1;
+        this.height = canvas.height * 0.15;
         this.image = new Image();
         this.lengthRatio = 4;
         // this.posState = PosState.before
@@ -684,7 +711,8 @@ class Car{
                     default:
                         ;
                 }
-                this.speed = -5;
+                // this.speed = -5;
+                this.speed = -1 * Car.defaultSpeed;
                 break;
             case CarBound.down:
                 this.defaultYPos = this.defaultDownYPos;
@@ -704,40 +732,41 @@ class Car{
                     default:
                         ;
                 }
-                this.speed = 5;
+                // this.speed = 5;
+                this.speed = Car.defaultSpeed;
                 break;
             default:
                 ;
         }
     }
-    getDistance(){
-        let no = 0;
-        if(this.CarBound == CarBound.up){
-            for(let i=0; i< upActiveCars.length; ++i){
-                if(upActiveCars[i] == this){
-                    no = i;
-                    break;
-                }
-            }
-            if(no == 0){ // first
-                return 2 * this.length;
-            }else{
-                return this.y - upActiveCars[no - 1].y;
-            }
-        }else{ // CarBound.down
-            for(let i=0; i< downActiveCars.length; ++i){
-                if(downActiveCars[i] == this){
-                    no = i;
-                    break;
-                }
-            }
-            if(no == 0){ // first
-                return 2 * this.length;
-            }else{
-                return this.y - upActiveCars[no - 1].y;
-            }
-        }
-    }
+    // getDistance(){
+    //     let no = 0;
+    //     if(this.CarBound == CarBound.up){
+    //         for(let i=0; i< upActiveCars.length; ++i){
+    //             if(upActiveCars[i] == this){
+    //                 no = i;
+    //                 break;
+    //             }
+    //         }
+    //         if(no == 0){ // first
+    //             return 2 * this.length;
+    //         }else{
+    //             return this.y - upActiveCars[no - 1].y;
+    //         }
+    //     }else{ // CarBound.down
+    //         for(let i=0; i< downActiveCars.length; ++i){
+    //             if(downActiveCars[i] == this){
+    //                 no = i;
+    //                 break;
+    //             }
+    //         }
+    //         if(no == 0){ // first
+    //             return 2 * this.length;
+    //         }else{
+    //             return this.y - upActiveCars[no - 1].y;
+    //         }
+    //     }
+    // }
     draw(){
         // if (this.pos == TrainPos.inArea) {
             ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
@@ -869,8 +898,10 @@ ipcRenderer.on('asynchronous-reply', (event, arg) => {
 //-----------------------------------------------------------------------
 const canvas = document.getElementById('canvas');
 // const canvas = document.createElement("canvas");
-canvas.width = 800;
-canvas.height = 600;
+// canvas.width = 800;
+// canvas.height = 600;
+canvas.width = 400;
+canvas.height = 300;
 // document.body.appendChild(canvas);
 const ctx = canvas.getContext("2d");
 let blinkFlag = false;
@@ -916,7 +947,8 @@ function drawAll() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const img = new Image();
     img.src = "../images/railway_with_road.svg";
-    ctx.drawImage(img, -150, -100);
+    // ctx.drawImage(img, -150, -100 ); // 800 x 600
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     drawInboundSignals();
     drawInboundTrains();
     drawOutboundTrains();
@@ -928,7 +960,7 @@ function drawCars(){
     // if(Car.waitCount > 50){
     if(Car.waitCount > Car.nextWait){
         Car.waitCount = 0;
-        Car.nextWait = 70 + Math.round((Math.random() * 75));
+        Car.nextWait = 50 + Math.round((Math.random() * 75));
         upActiveCars.push(upInActiveCars.shift());
         downActiveCars.push(downInActiveCars.shift());
     }
