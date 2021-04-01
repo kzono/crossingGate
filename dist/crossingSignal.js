@@ -85,12 +85,13 @@ class Signal {
         this.pos = pos;
         // const left = canvas.width * 0.20;
         // const right = canvas.width * 0.50;
-        const left = canvas.width * 0.25;
-        const right = canvas.width * 0.55;
+        const left = canvas.width * 0.28;
+        const right = canvas.width * 0.49;
         // this.barLeft = this.x - this.width * barOffsetRatioLeft;
         // this.barRight = this.x - this.width * barOffsetRatioRight;
         // const top = 0;
-        const top = 10;
+        // const top = 10;
+        const top = canvas.height * 0.1;
         // const bottom = canvas.height * 0.50;
         const bottom = canvas.height * 0.40;
         switch (pos) {
@@ -668,16 +669,16 @@ var CarType;
 class Car{
     static waitCount = 0;
     static nextWait = 50;
-    static length = 150;
+    static length = 50;
     static defaultSpeed = 3;
     constructor(bound, cartype){
         this.left = canvas.width * 0.38;
         this.right = canvas.width * 0.475;
-        // this.defaultUpYPos = -this.length - canvas.height * 0.5;
-        this.defaultUpYPos =  canvas.height * 0.93;
-        this.upStopYPos =  canvas.height * 0.68;
+        this.defaultUpYPos =  canvas.height * 1.1;
+        this.upStopYPos =  canvas.height * 0.65;
         this.defaultDownYPos = canvas.height * (-0.25);
-        this.downStopYPos = canvas.height * (-0.02);
+        // this.downStopYPos = canvas.height * (0.12);
+        this.downStopYPos = canvas.height * (0.15);
         this.defaultYPos = 0;
         this.pos = CarPos.outOfArea;
         this.posState = CarPosState.before;
@@ -685,19 +686,15 @@ class Car{
         this.y = 0;
         this.speed = 0;
         this.bound = bound;
-        // this.width = 100; 
-        // this.height = 150;
         this.width = canvas.width * 0.1;
         this.height = canvas.height * 0.15;
         this.image = new Image();
         this.lengthRatio = 4;
-        // this.posState = PosState.before
         switch (bound) {
             case CarBound.up:
                 this.defaultYPos = this.defaultUpYPos;
                 this.x = this.left;
                 this.y = this.defaultYPos;
-                // this.image.src = "../images/topview_car_up.png";
                 switch(cartype){
                     case CarType.sedan:
                         this.image.src = "../images/topview_car_up.png";
@@ -711,14 +708,12 @@ class Car{
                     default:
                         ;
                 }
-                // this.speed = -5;
                 this.speed = -1 * Car.defaultSpeed;
                 break;
             case CarBound.down:
                 this.defaultYPos = this.defaultDownYPos;
                 this.x = this.right;
                 this.y = this.defaultYPos;
-                // this.image.src = "../images/topview_car_Down.svg";
                 switch(cartype){
                     case CarType.sedan:
                         this.image.src = "../images/topview_car_Down.svg";
@@ -732,60 +727,30 @@ class Car{
                     default:
                         ;
                 }
-                // this.speed = 5;
                 this.speed = Car.defaultSpeed;
                 break;
             default:
                 ;
         }
     }
-    // getDistance(){
-    //     let no = 0;
-    //     if(this.CarBound == CarBound.up){
-    //         for(let i=0; i< upActiveCars.length; ++i){
-    //             if(upActiveCars[i] == this){
-    //                 no = i;
-    //                 break;
-    //             }
-    //         }
-    //         if(no == 0){ // first
-    //             return 2 * this.length;
-    //         }else{
-    //             return this.y - upActiveCars[no - 1].y;
-    //         }
-    //     }else{ // CarBound.down
-    //         for(let i=0; i< downActiveCars.length; ++i){
-    //             if(downActiveCars[i] == this){
-    //                 no = i;
-    //                 break;
-    //             }
-    //         }
-    //         if(no == 0){ // first
-    //             return 2 * this.length;
-    //         }else{
-    //             return this.y - upActiveCars[no - 1].y;
-    //         }
-    //     }
-    // }
-    draw(){
-        // if (this.pos == TrainPos.inArea) {
-            ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
-            this.run();
-        // }       
+
+    draw(isStop){
+        ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+        this.run(isStop);
     }
-    run(){
-        // if(this.length < this.getDistance()){
-        //     this.y += this.speed;
-        // }
+    run(isStop){
+
+        if(isStop == false){this.y += this.speed;}
         // console.log(this.y);
         switch(this.bound){
             case CarBound.up:
                 switch(this.posState){
                     case CarPosState.before:
                         // console.log(this.y);
-                        if(this.y < this.upStopYPos && (this.y + this.speed) < this.upStopYPos){
+                        if(this.y > this.upStopYPos && (this.y + this.speed) <= this.upStopYPos){
                             if(signalLeftBottom.barState == BarState.closed ||
                                 signalLeftBottom.barState == BarState.closing){
+                                this.y -= this.speed;
                                 return;
                             }
                         }
@@ -809,9 +774,10 @@ class Car{
             case CarBound.down:
                 switch(this.posState){
                     case CarPosState.before:
-                        if(this.y < this.upStopYPos && (this.y + this.speed) > this.downStopYPos){
+                        if(this.y < this.downStopYPos && (this.y + this.speed) >= this.downStopYPos){
                             if(signalRightTop.barState == BarState.closed ||
                                 signalRightTop.barState == BarState.closing){
+                                this.y -= this.speed;
                                 return;
                             }
                         }
@@ -835,32 +801,24 @@ class Car{
                 break;
         }
 
-        this.y += this.speed;
 
         if (this.bound == CarBound.up) {
-
-            if (this.y + this.length + canvas.height * 0.25 < 0) {
+            if (this.y + this.height  < 0) {
                 this.pos = CarPos.outOfArea;
-                this.CarPosState = CarPosState.before;
-                // console.log("up before");
-                this.y = this.defaultYPos;
-                // console.log('run(): up this.pos = outOfArea.');
-                // console.log('run(): y = %d', this.y);
-                upInActiveCars.push(this);
-                upActiveCars.shift();
+                this.posState = CarPosState.before;
+                this.y = this.defaultUpYPos;
+                upInActiveCars.push(upActiveCars.shift());
             }
         }
         if (this.bound == CarBound.down) {
-
-            if (this.y + this.length > canvas.height) {
+            if (this.y - this.height > canvas.height) {
                 this.pos = CarPos.outOfArea;
-                this.carPosState = CarPosState.before;
+                this.posState = CarPosState.before;
                 // console.log("down before");
                 this.y = this.defaultYPos;
                 // console.log('run(): down this.pos = outOfArea.');
                 // console.log('run(): y = %d', this.y);
-                downInActiveCars.push(this);
-                downActiveCars.shift();
+                downInActiveCars.push(downActiveCars.shift());
             }
         }
     }
@@ -930,7 +888,8 @@ window.addEventListener("load", () => {
         inboundInActiveTrains.push(new Train(TrainBound.inbound));
         outboundInActiveTrains.push(new Train(TrainBound.outbound));
     }
-    const carMaxNum = 10;
+    // const carMaxNum = 10;
+    const carMaxNum = 5;
     let type;
     for(let i = 0; i < carMaxNum; ++i){
     // upInActiveCars.push(new Car(CarBound.up, CarType.sedan));
@@ -960,37 +919,38 @@ function drawCars(){
     // if(Car.waitCount > 50){
     if(Car.waitCount > Car.nextWait){
         Car.waitCount = 0;
-        Car.nextWait = 50 + Math.round((Math.random() * 75));
-        upActiveCars.push(upInActiveCars.shift());
-        downActiveCars.push(downInActiveCars.shift());
+        Car.nextWait = 20 + Math.round((Math.random() * 50));
+        if(0 < upInActiveCars.length){
+            upActiveCars.push(upInActiveCars.shift());
+        }
+        if(0 < downInActiveCars.length){
+            downActiveCars.push(downInActiveCars.shift());
+        }
     }
     drawUpCars();
     drawDownCars();
 }
 function drawUpCars() {
-    // upCar.draw();
-    // upActiveCars.map(car => car.draw());
     if(0 == upActiveCars.length) return;
-    upActiveCars[0].draw();
+    upActiveCars[0].draw(false);
     for(let i = 0; i < upActiveCars.length - 1; i++){
-        let distance = upActiveCars[i+1].y - upActiveCars[i].y;
-        // console.log("%d: %d", i ,distance);
-        if(distance > Car.length*1.1){
-            upActiveCars[i+1].draw();
+        let distance = upActiveCars[i+1].y - upActiveCars[i].y; 
+        if(distance > Car.length){
+            upActiveCars[i+1].draw(false);
+        }else{
+            upActiveCars[i+1].draw(true);
         }
     }
 }
 function drawDownCars() {
-    // downCar.draw();
-    // downInActiveCars[2].draw();
-    // downActiveCars.map(car => car.draw());
     if(0 == downActiveCars.length) return;
-    downActiveCars[0].draw();
+    downActiveCars[0].draw(false);
     for(let i = 0; i < downActiveCars.length - 1; i++){
         let distance = downActiveCars[i].y - downActiveCars[i+1].y;
-        // console.log("%d: %d", i ,distance);
-        if(distance > Car.length*1.1){
-            downActiveCars[i+1].draw();
+        if(distance > Car.length){
+            downActiveCars[i+1].draw(false);
+        }else{
+            downActiveCars[i+1].draw(true);
         }
     }
 }
