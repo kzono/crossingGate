@@ -9,6 +9,9 @@ let server;
 //
 var receiveEvent = '';
 
+// TCP Socket client からの最初のイベントかどうかを判別するためのフラグ
+var firstEventFromTCPSocket = true;
+
 
 //---------------------------------------------------------------------
 // Electron の画面を制御する機能
@@ -81,7 +84,17 @@ server = net.createServer(function(socket){
   socket.on("data", (data)=>{
     // data.reply('asynchronous-reply', 'pong')
     console.log(data);
+    // グローバル変数 receiveEvent を介して renderer へイベントを渡す
     receiveEvent = data;
+
+    // TCP Socket client からイベントを受け取ってから、自身が TCP Socket client として接続する
+    if(firstEventFromTCPSocket){
+      firstEventFromTCPSocket = false;
+      client.connect('5678', 'localhost', () => {
+        console.log('main to ext');
+      });
+    } 
+
   });
   socket.on('close', () =>{
     console.log('server-> client closed connection');
@@ -100,9 +113,9 @@ const { Socket } = require('dgram');
 
 var client = new net.Socket();
 client.setEncoding('utf8');
-client.connect('5678', 'localhost', () => {
-  console.log('main to ext');
-});
+// client.connect('5678', 'localhost', () => {
+//   console.log('main to ext');
+// });
 
 //---------------------------------------------------
 // renderer からの非同期メッセージの受信と返信
