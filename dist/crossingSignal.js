@@ -470,7 +470,8 @@ class Train {
     constructor(bound) {
         // this.length = 40;
         this.length = canvas.width * 0.05;
-        this.defaultInboundXPos = -this.length - canvas.width*0.3;
+        // this.defaultInboundXPos = -this.length - canvas.width*0.3;
+        this.defaultInboundXPos = -this.length - canvas.width*0.1;
         this.defaultOutboundXPos = canvas.width * 0.9;
         this.defaultXPos = 0;
         this.pos = TrainPos.outOfArea;
@@ -481,8 +482,10 @@ class Train {
         this.image = new Image();
         // this.left = -100;
         // this.right = 400;
-        this.left = -50;
-        this.right = 200;
+        // this.left = -50;
+        this.left = 10;
+        // this.right = 200;
+        this.right = 190;
         this.lengthRatio = 4;
         this.posState = PosState.before;
 
@@ -975,6 +978,7 @@ function drawInboundSignals() {
     signalRightTop.draw();
 }
 setInterval(drawAll, 90);
+// setInterval(drawAll, 900);
 
 function trainInbound() {
     console.log("上り電車が来た！");
@@ -1022,8 +1026,8 @@ let pollingEvent = () => {
   const evt = retValue.trim();
   if('' !== evt){
     
+    console.log("evt = %s", evt); 
     if('START_WARN' == evt){
-      console.log(evt); 
       startSound();
     }else if('STOP_WARN' == evt){
       stopSound();
@@ -1045,9 +1049,11 @@ let pollingEvent = () => {
         signalLeftBottom.handleEvent(EventToSignal.open);
     }else if('BAR_UP_RIGHT_TOP' == evt){
         signalRightTop.handleEvent(EventToSignal.open);
-        barUp();
+        // barUp();
     }else if('BAR_UP_RIGHT_BOTTOM' == evt){
         signalRightBottom.handleEvent(EventToSignal.open);
+    }else{
+        console.log("Renderer: received event was wrong. %s", evt);
     }
   }
 }

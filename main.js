@@ -9,9 +9,7 @@ let server;
 //
 var receiveEvent = '';
 
-// TCP Socket client からの最初のイベントかどうかを判別するためのフラグ
-var firstEventFromTCPSocket = true;
-
+var firstEventFromControler = true;
 
 //---------------------------------------------------------------------
 // Electron の画面を制御する機能
@@ -83,15 +81,15 @@ server = net.createServer(function(socket){
 
   socket.on("data", (data)=>{
     // data.reply('asynchronous-reply', 'pong')
-    console.log(data);
+    console.log("socket received: %s",data);
     // グローバル変数 receiveEvent を介して renderer へイベントを渡す
     receiveEvent = data;
 
     // TCP Socket client からイベントを受け取ってから、自身が TCP Socket client として接続する
-    if(firstEventFromTCPSocket){
-      firstEventFromTCPSocket = false;
+    if(firstEventFromControler){
+      firstEventFromControler = false;
       client.connect('5678', 'localhost', () => {
-        console.log('main to ext');
+        console.log('connect to controler');
       });
     } 
 
@@ -139,6 +137,9 @@ ipcMain.on('synchronous-message', (event, arg) => {
 
   // グローバル変数 receivedEvent の値を読み取り、
   // renderer に戻り値として返す。
+  if('' != receiveEvent){
+    console.log("to renderer:%s", receiveEvent);
+  }
   event.returnValue = receiveEvent;
   receiveEvent = '';
 })

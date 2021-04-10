@@ -1,7 +1,7 @@
 {
-  "name": "CrossingGate Simulator",
+  "name": "crossingGateSimulator",
   "version": "1.0.0",
-  "description": "踏切制御シミュレータ",
+  "description": "雕丞��蛻ｶ蠕｡繧ｷ繝溘Η繝ｬ繝ｼ繧ｿ",
   "main": "main.js",
   "scripts": {
     "start": "electron ."
@@ -15,5 +15,20 @@
   "devDependencies": {
     "electron": "^12.0.0",
     "electron-builder": "^22.10.5"
+  },
+  "dependencies": {
+    "yarn": "^1.22.10"
+  },
+  "build": {
+    "appId": "com.example.crossingGateSimulator",
+    "productName": "CrossingGate Simulator",
+    "files": [
+      "dist/*",
+      "html/*",
+      "images/*",
+      "sounds",
+      "src",
+      "*"
+    ]
   }
 }
